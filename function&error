@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract AcademicGradingSystem {
+    address public administrator;
+    mapping(address => uint256) public grades;
+    uint256 public studentCount;
+
+    constructor() {
+        administrator = msg.sender; // Assign the contract creator as the administrator
+    }
+
+    // Modifier to restrict function access to the administrator
+    modifier onlyAdministrator() {
+        require(msg.sender == administrator, "Access denied: Only administrator allowed");
+        _;
+    }
+
+    // Function to record a student's grade
+    function recordGrade(address student, uint256 grade) public onlyAdministrator {
+        require(grade >= 0 && grade <= 100, "Invalid grade: Must be between 0 and 100");
+        if (grades[student] == 0) {
+            studentCount += 1;
+        }
+        grades[student] = grade;
+    }
+
+    // Function to fetch a student's grade
+    function getGrade(address student) public view returns (uint256) {
+        uint256 grade = grades[student];
+        require(grade > 0, "No grade recorded for this student");
+        return grade;
+    }
+
+    // Function to validate the student count
+    function validateStudentCount() public view returns (string memory) {
+        // Ensure the student count is non-negative
+        assert(studentCount >= 0);
+        return "Student count is valid";
+    }
+
+    // Function to erase a student's grade using revert
+    function eraseGrade(address student) public onlyAdministrator {
+        if (grades[student] == 0) {
+            revert("Grade is already zero or not recorded");
+        }
+        grades[student] = 0;
+        studentCount -= 1;
+    }
+}
